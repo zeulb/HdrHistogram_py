@@ -81,7 +81,7 @@ class HistogramLogWriter(object):
                 default: 1,000,000 (which is the msec : nsec ratio
 
         Exceptions:
-            ValueError if tag string contains white spaces or commas 
+            ValueError if tag string contains white spaces or commas
         '''
         if not start_time_stamp_sec:
             start_time_stamp_sec = \
