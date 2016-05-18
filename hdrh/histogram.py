@@ -136,6 +136,7 @@ class HdrHistogram(object):
         self.counts = self.encoder.get_counts()
         self.start_time_stamp_msec = 0
         self.end_time_stamp_msec = 0
+        self.tag = None
 
     def _clz(self, value):
         """calculate the leading zeros, equivalent to C __builtin_clzll()
@@ -494,6 +495,16 @@ class HdrHistogram(object):
                 [by convention] in msec since the epoch.
         '''
         self.end_time_stamp_msec = time_stamp_msec
+
+    def get_tag(self):
+        return self.tag
+
+    def set_tag(self, tag):
+        '''Set the tag string associated with this histogram
+        Params:
+            tag the tag string to assciate with this histogram
+        '''
+        self.tag = tag
 
     def add(self, other_hist):
         highest_recordable_value = \
