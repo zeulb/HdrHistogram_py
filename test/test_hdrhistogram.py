@@ -605,6 +605,31 @@ def test_jHiccup_v2_log():
 
         log_reader.close()
 
+TAGGED_LOG_NAME = "test/tagged-Log.logV2.hlog"
+
+@pytest.mark.log
+def test_tagged_log():
+    accumulated_histogram_with_no_tag = HdrHistogram(LOWEST, HIGHEST, SIGNIFICANT)
+    accumulated_histogram_with_tag_A = HdrHistogram(LOWEST, HIGHEST, SIGNIFICANT)
+    log_reader = HistogramLogReader(TAGGED_LOG_NAME, accumulated_histogram_with_no_tag)
+
+    histogram_count = 0
+    total_count = 0
+    while 1:
+        decoded_histogram = log_reader.get_next_interval_histogram()
+        if not decoded_histogram:
+            break
+        histogram_count += 1
+        total_count += decoded_histogram.get_total_count()
+        if decoded_histogram.get_tag() == 'A':
+            accumulated_histogram_with_tag_A.add(decoded_histogram)
+        else:
+            accumulated_histogram_with_no_tag.add(decoded_histogram)
+        # These logs use 8 byte counters
+        assert(decoded_histogram.get_word_size() == 8)
+    assert(total_count == 32290)
+    assert(accumulated_histogram_with_no_tag == accumulated_histogram_with_tag_A)
+
 @pytest.mark.log
 def test_output_percentile_distribution():
     histogram = load_histogram()
