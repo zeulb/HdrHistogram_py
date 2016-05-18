@@ -53,10 +53,11 @@ class HistogramLogWriter(object):
                                   start_time_stamp_sec=0,
                                   end_time_stamp_sec=0,
                                   max_value_unit_ratio=1000000.0):
-        '''Output an interval histogram, with the given timestamp and a
+        '''Output an interval histogram, with the given timestamp information
+        and the [optional] tag associated with the histogram, using a
         configurable maxValueUnitRatio.
-        (note that the specified timestamp will be used, and the timestamp in
-        the actual histogram will be ignored).
+        (note that the specified timestamp information will be used, and the
+        timestamp information in the actual histogram will be ignored).
         The max value reported with the interval line will be scaled by the
         given max_value_unit_ratio.
         The histogram start and end timestamps are assumed to be in msec units.
@@ -85,11 +86,23 @@ class HistogramLogWriter(object):
         if not end_time_stamp_sec:
             end_time_stamp_sec = (histogram.get_end_time_stamp() - self.base_time) / 1000.0
         cpayload = histogram.encode()
-        self.log.write("%f,%f,%f,%s\n" %
-                       (start_time_stamp_sec,
-                        end_time_stamp_sec - start_time_stamp_sec,
-                        histogram.get_max_value() // max_value_unit_ratio,
-                        cpayload.decode('utf-8')))
+
+        tag = histogram.get_tag()
+        if tag is None:
+            self.log.write("%f,%f,%f,%s\n" %
+                           (start_time_stamp_sec,
+                            end_time_stamp_sec - start_time_stamp_sec,
+                            histogram.get_max_value() // max_value_unit_ratio,
+                            cpayload.decode('utf-8')))
+        else:
+            if re.search(r'[,|\s]', tag):
+                raise ValueError('Tag string cannot contain commas, spaces, or line breaks')
+            self.log.write("Tag=%s,%f,%f,%f,%s\n" %
+                           (tag,
+                            start_time_stamp_sec,
+                            end_time_stamp_sec - start_time_stamp_sec,
+                            histogram.get_max_value() // max_value_unit_ratio,
+                            cpayload.decode('utf-8')))
 
     def output_start_time(self, start_time_msec):
         '''Log a start time in the log.
