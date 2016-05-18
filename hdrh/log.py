@@ -79,6 +79,9 @@ class HistogramLogWriter(object):
             max_value_unit_ratio The ratio by which to divide the histogram's max
                 value when reporting on it.
                 default: 1,000,000 (which is the msec : nsec ratio
+
+        Exceptions:
+            ValueError if tag string contains white spaces or commas 
         '''
         if not start_time_stamp_sec:
             start_time_stamp_sec = \
@@ -227,7 +230,8 @@ class HistogramLogReader(object):
             value to the latest [optional] start time found in the log.
 
         Exceptions:
-            ValueError if there is a syntax error in one of the float fields
+            ValueError if there is a syntax error in one of the float fields or
+                       tag field
         '''
         while 1:
             line = self.input_file.readline()
