@@ -150,8 +150,10 @@ re_start_time = re.compile('#\[StartTime: *([\d\.]*) ')
 # "#[BaseTime: %f (seconds since epoch)]\n"
 re_base_time = re.compile('#\[BaseTime: *([\d\.]*) ')
 
-# "%f,%f,%f,%s\n"
-re_histogram_interval = re.compile('([\d\.]*),([\d\.]*),([\d\.]*),(.*)')
+# "%f,%f,%f,%s\n" or "Tag=%s,%f,%f,%f,%s\n"
+re_histogram_interval = re.compile('(Tag=(?P<tag>[\S]*),)?(?P<start_time_stamp>[\d\.]*),'
+                                   '(?P<interval_length>[\d\.]*),(?P<max_time>[\d\.]*),'
+                                   '(?P<histogram_payload>.*)')
 
 class HistogramLogReader(object):
 
@@ -249,9 +251,10 @@ class HistogramLogReader(object):
                 continue
             # Decode: startTimestamp, intervalLength, maxTime, histogramPayload
             # Timestamp is expected to be in seconds
-            log_time_stamp_in_sec = float(match_res.group(1))
-            interval_length_sec = float(match_res.group(2))
-            cpayload = match_res.group(4)
+            tag_string = match_res.group('tag')
+            log_time_stamp_in_sec = float(match_res.group('start_time_stamp'))
+            interval_length_sec = float(match_res.group('interval_length'))
+            cpayload = match_res.group('histogram_payload')
 
             if not self.observed_start_time:
                 # No explicit start time noted. Use 1st observed time:
@@ -298,6 +301,7 @@ class HistogramLogReader(object):
                 histogram = HdrHistogram.decode(cpayload)
                 histogram.set_start_time_stamp(absolute_start_time_stamp_sec * 1000.0)
                 histogram.set_end_time_stamp(absolute_end_time_stamp_sec * 1000.0)
+                histogram.set_tag(tag_string)
             return histogram
 
     def get_next_interval_histogram(self,
