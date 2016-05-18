@@ -141,12 +141,11 @@ class HdrHistogram(object):
     def __eq__(self, other):
         if not isinstance(other, HdrHistogram):
             return False
-        if all([self.lowest_trackable_value == other.lowest_trackable_value,
-               self.significant_figures != other.significant_figures]):
-            return False
-        if all([self.get_total_count() == other.get_total_count(),
-               self.get_max_value() != other.get_max_value(),
-               self.get_min_value() != other.get_min_value()]):
+        if self.lowest_trackable_value != other.lowest_trackable_value or \
+           self.significant_figures != other.significant_figures or \
+           self.get_total_count() != other.get_total_count() or \
+           self.get_max_value() != other.get_max_value() or \
+           self.get_min_value() != other.get_min_value():
             return False
         return all(map(lambda i: self.get_count_at_index(i) == other.get_count_at_index(i),
                    range(self.counts_len)))
